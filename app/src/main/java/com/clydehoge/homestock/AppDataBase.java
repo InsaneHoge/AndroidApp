@@ -6,9 +6,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 /**
- * Basic database class for the app
+ * By Clyde Hogenstijn 20-05-20
+ * Basic database class for the app.
  *
- * Only class that should use this is AppProvider!
+ * Only class that should use this is {@link AppProvider}!
  */
 
 class AppDataBase extends SQLiteOpenHelper {
@@ -26,7 +27,7 @@ class AppDataBase extends SQLiteOpenHelper {
     }
 
     /**
-     * Get an instance of the app's singleton database helper object
+     * Get an instance of the app's singleton database helper object.
      *
      * @param context the content providers context.
      * @return a SQLite database helper object.

@@ -19,6 +19,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <provider
+            android:authorities="com.clydehoge.homestock.provider"
+            android:name="com.clydehoge.homestock.AppProvider"
+            android:exported="false"/>
+
     </application>
 
 </manifest>
