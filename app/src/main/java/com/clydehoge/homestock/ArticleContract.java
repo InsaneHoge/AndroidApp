@@ -7,7 +7,7 @@ import static com.clydehoge.homestock.AppProvider.CONTENT_AUTHORITY_URI;
 import static com.clydehoge.homestock.AppProvider.CONTENT_AUTHORITY;
 
 /**
- * By Clyde Hogenstijn
+ * By Clyde Hogenstijn 20-05-20
  */
 
 public class ArticleContract {
@@ -20,6 +20,7 @@ public class ArticleContract {
         public static final String ARTICLE_NAME = "Name";
         public static final String ARTICLE_DESCRIPTION = "Description";
         public static final String ARTICLE_SORTORDER = "SortOrder";
+//        public static final String ARTICLE_CATEGORY = "category";
 
         private Columns(){
             // prevent instantiation

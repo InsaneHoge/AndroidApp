@@ -89,7 +89,7 @@ public class AppProvider extends ContentProvider {
 //                queryBuilder.setTables(StockContract.TABLE_NAME);
 //                break;
 //            case ARTICLE_STOCK_ID:
-//                queryBuilder.setTables(ArticleContract.TABLE_NAME);
+//                queryBuilder.setTables(StockContract.TABLE_NAME);
 //                long stockId = StockContract.getStockId(uri);
 //                queryBuilder.appendWhere(StockContract.Columns._ID + " = " + stockId);
 //                break;
@@ -98,7 +98,7 @@ public class AppProvider extends ContentProvider {
 //                queryBuilder.setTables(StockInfoContract.TABLE_NAME);
 //                break;
 //            case STOCK_INFO_ID:
-//                queryBuilder.setTables(ArticleContract.TABLE_NAME);
+//                queryBuilder.setTables(StockInfoContract.TABLE_NAME);
 //                long stockInfoId = StockInfoContract.getStockInfoId(uri);
 //                queryBuilder.appendWhere(StockInfoContract.Columns._ID + " = " + stockInfoId);
 //                break;
@@ -115,22 +115,166 @@ public class AppProvider extends ContentProvider {
     @Nullable
     @Override
     public String getType(@NonNull Uri uri) {
-        return null;
+
+        final int match = sUriMatcher.match(uri);
+
+        switch(match){
+            case ARTICLE:
+                return ArticleContract.CONTENT_TYPE;
+            case ARTICLE_ID:
+                return ArticleContract.CONTENT_ITEM_TYPE;
+
+//            case ARTICLE_STOCK:
+//                return StockContract.Stock.CONTENT_TYPE;
+//            case ARTICLE_STOCK_ID:;
+//                return StockContract.Stock.CONTENT_ITEM_TYPE;
+//            case STOCK_INFO:
+//                return StockInfoContract.StockInfo.CONTENT_TYPE;
+//            case STOCK_INFO_ID:
+//                return StockinfoContract.StockInfo.CONTENT_ITEM_TYPE;
+
+            default:
+                throw new IllegalArgumentException("Unknown URI: " + uri);
+        }
+
     }
 
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
-        return null;
+        Log.d(TAG, "Entering insert, called with uri: " + uri);
+        final int match = sUriMatcher.match(uri);
+        Log.d(TAG, "match is " + match);
+
+        final SQLiteDatabase db;
+
+        Uri returnUri;
+        long recordId;
+
+        switch(match){
+            case ARTICLE:
+                db = mOpenHelper.getWritableDatabase();
+                recordId = db.insert(ArticleContract.TABLE_NAME, null, values);
+                if(recordId >=0){
+                    returnUri = ArticleContract.buildArticleUri(recordId);
+                } else{
+                    throw new android.database.SQLException("Failed to insert into " + uri.toString());
+                }
+                break;
+            case ARTICLE_STOCK:
+//                db = mOpenHelper.getWritableDatabase();
+//                recordId = db.insert(StockContract.Stock.buildStockUri(recordId));
+//                if(recordId >=0){
+//                    returnUri = StockContract.Stock.buildStockUri(recordId);
+//                }else{
+//                    throw new android.database.SQLException("Failed to insert into " + uri.toString());
+//                }
+//                break;
+
+            default:
+                throw new IllegalArgumentException("Unknown uri: " + uri);
+        }
+        Log.d(TAG, "Exiting insert, returning : " + returnUri);
+        return returnUri;
     }
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+        Log.d(TAG, "update called with uri " + uri);
+        final int match = sUriMatcher.match(uri);
+        Log.d(TAG, "match is: " + match);
+
+        final SQLiteDatabase db;
+        int count;
+        String selectionCriteria;
+
+        switch (match){
+            case ARTICLE:
+                db = mOpenHelper.getWritableDatabase();
+                count = db.delete(ArticleContract.TABLE_NAME, selection, selectionArgs);
+                break;
+
+            case ARTICLE_ID:
+                db = mOpenHelper.getWritableDatabase();
+                long articleId = ArticleContract.getArticleId(uri);
+                selectionCriteria = ArticleContract.Columns._ID + " = " + articleId;
+
+                if((selection != null) && (selection.length()>0)){
+                    selectionCriteria += " AND (" + selection + ")";
+                }
+                count = db.delete(ArticleContract.TABLE_NAME, selectionCriteria, selectionArgs);
+                break;
+
+//            case ARTICLE_STOCK:
+//                db = mOpenHelper.getWritableDatabase();
+//                count = db.delete(StockContract.TABLE_NAME, selection, selectionArgs);
+//                break;
+//
+//            case ARTICLE_STOCK_ID:
+//                db = mOpenHelper.getWritableDatabase();
+//                long stockId = StockContract.getArticleId(uri);
+//                selectionCriteria = StockContract.Columns._ID + " = " + stockId;
+//
+//                if((selection != null) && (selection.length()>0)){
+//                    selectionCriteria += " AND (" + selection + ")";
+//                }
+//                count = db.delete(StockContract.TABLE_NAME, selectionCriteria, selectionArgs);
+//                break;
+
+            default:
+                throw new IllegalArgumentException("Unknown uri: " + uri);
+        }
+        Log.d(TAG, "Exiting update, returning: " + count);
+        return count;
     }
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+        Log.d(TAG, "update called with uri " + uri);
+        final int match = sUriMatcher.match(uri);
+        Log.d(TAG, "match is: " + match);
+
+        final SQLiteDatabase db;
+        int count;
+        String selectionCriteria;
+
+        switch (match){
+            case ARTICLE:
+                db = mOpenHelper.getWritableDatabase();
+                count = db.update(ArticleContract.TABLE_NAME, values, selection, selectionArgs);
+                break;
+
+            case ARTICLE_ID:
+                db = mOpenHelper.getWritableDatabase();
+                long articleId = ArticleContract.getArticleId(uri);
+                selectionCriteria = ArticleContract.Columns._ID + " = " + articleId;
+
+                if((selection != null) && (selection.length()>0)){
+                    selectionCriteria += " AND (" + selection + ")";
+                }
+                count = db.update(ArticleContract.TABLE_NAME, values, selectionCriteria, selectionArgs);
+                break;
+
+//            case ARTICLE_STOCK:
+//                db = mOpenHelper.getWritableDatabase();
+//                count = db.update(StockContract.TABLE_NAME, values, selection, selectionArgs);
+//                break;
+//
+//            case ARTICLE_STOCK_ID:
+//                db = mOpenHelper.getWritableDatabase();
+//                long stockId = StockContract.getArticleId(uri);
+//                selectionCriteria = StockContract.Columns._ID + " = " + stockId;
+//
+//                if((selection != null) && (selection.length()>0)){
+//                    selectionCriteria += " AND (" + selection + ")";
+//                }
+//                count = db.update(StockContract.TABLE_NAME, values, selectionCriteria, selectionArgs);
+//                break;
+
+            default:
+                throw new IllegalArgumentException("Unknown uri: " + uri);
+        }
+        Log.d(TAG, "Exiting update, returning: " + count);
+        return count;
     }
 }

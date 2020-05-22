@@ -1,8 +1,10 @@
 package com.clydehoge.homestock;
 
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -16,6 +18,10 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+/**
+ * By Clyde Hogenstijn 20-05-20
+ */
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
@@ -26,8 +32,40 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        String[] projection = {ArticleContract.Columns.ARTICLE_NAME, ArticleContract.Columns.ARTICLE_DESCRIPTION};
+        String[] projection = { ArticleContract.Columns._ID,
+                                ArticleContract.Columns.ARTICLE_NAME,
+                                ArticleContract.Columns.ARTICLE_DESCRIPTION,
+                                ArticleContract.Columns.ARTICLE_SORTORDER};
+
         ContentResolver contentResolver = getContentResolver();
+
+
+
+/*
+        ContentValues values = new ContentValues();
+
+        here we are deleting column with id "4":
+        int count = contentResolver.delete(ArticleContract.buildArticleUri(4), null, null);
+
+        Here we are deleting all columns with a description of "Mag weg". This method is used to delete multiple columns and to prevent SQL injection attack:
+        String selection = ArticleContract.Columns.ARTICLE_DESCRIPTION + " =?";
+        String[] args = { "Mag weg" };
+        int count = contentResolver.delete(ArticleContract.CONTENT_URI, selection, args);
+
+        Sample code to test inserting new data into db:
+        values.put(ArticleContract.Columns.ARTICLE_NAME, "New article");
+        values.put(ArticleContract.Columns.ARTICLE_DESCRIPTION, "Beschrijving");
+        values.put(ArticleContract.Columns.ARTICLE_SORTORDER, 2);
+        Uri uri = contentResolver.insert(ArticleContract.CONTENT_URI, values);
+
+        Sample code to test updating a column in the db:
+        values.put(ArticleContract.Columns.ARTICLE_NAME, "Pickwick Thee");
+        values.put(ArticleContract.Columns.ARTICLE_DESCRIPTION, "DUTCH blend");
+        values.put(ArticleContract.Columns.ARTICLE_SORTORDER, 4);
+        int count = contentResolver.update(ArticleContract.buildArticleUri(5), values, null, null);
+        Log.d(TAG, "onCreate: " + count + " record(s) updated");
+*/
+
         Cursor cursor = contentResolver.query(ArticleContract.CONTENT_URI,
                 projection,
                 null,
