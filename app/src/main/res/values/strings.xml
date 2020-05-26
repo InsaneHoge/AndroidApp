@@ -12,4 +12,22 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="menutitle_addArticle">Add Article</string>
+    <string name="menumain_viewArticleStock">View Article Stock</string>
+    <string name="menumain_settings">Settings</string>
+    <string name="menumain_showAbout">About this app</string>
+    <string name="menumain_generate">Generate Data</string>
+    <string name="no_article_selected">No article selected</string>
+    <string name="edit_description_button">Button to edit the article description.</string>
+    <string name="delete_button_description">Delete the article description</string>
+    <string name="ali_delete_article">Delete article from database</string>
+    <string name="addedit_name">Article name</string>
+    <string name="addedit_description">Article description</string>
+    <string name="addedit_sortorder">Sort order</string>
+    <string name="addedit_save">Add article</string>
+    <string name="addedit_name_hint">Article name: required</string>
+    <string name="addedit_description_hint">Description of article: optional</string>
+    <string name="addedit_sortorder_hint">Sort order: sorts low to high</string>
+    <string name="addedit_save_text">Add article</string>
+    <string name="title_activity_add_edit">AddEditActivity</string>
 </resources>
