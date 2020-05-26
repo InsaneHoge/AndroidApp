@@ -7,9 +7,9 @@
 
     <fragment
         android:id="@+id/FirstFragment"
-        android:name="com.clydehoge.homestock.FirstFragment"
+        android:name="com.clydehoge.homestock.AddEditActivityFragment"
         android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first">
+        tools:layout="@layout/fragment_add_edit">
 
         <action
             android:id="@+id/action_FirstFragment_to_SecondFragment"

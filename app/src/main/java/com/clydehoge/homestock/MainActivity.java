@@ -1,6 +1,8 @@
 package com.clydehoge.homestock;
 
 import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 
@@ -22,6 +24,14 @@ import android.view.MenuItem;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
+    /*
+    mTwoPane is to see if  we are in 2-pane mode.
+    i.e. running in landscape on a tablet
+     */
+    private boolean mTwoPane = false;
+
+    private static final String ADD_EDIT_FRAGMENT = "AddEditFragment";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,10 +39,67 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        String[] projection = { ArticleContract.Columns._ID,
-                                ArticleContract.Columns.ARTICLE_NAME,
-                                ArticleContract.Columns.ARTICLE_DESCRIPTION,
-                                ArticleContract.Columns.ARTICLE_SORTORDER};
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        switch (id) {
+            case R.id.menumain_addArticle:
+                break;
+            case R.id.menumain_viewArticleStock:
+                break;
+            case R.id.menumain_settings:
+                break;
+            case R.id.menumain_showAbout:
+                break;
+            case R.id.menumain_generate:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void articleEditrequest(Article article) {
+        Log.d(TAG, "articleEditrequest: starts");
+        if (mTwoPane) {
+            Log.d(TAG, "articleEditrequest: in two-pane mode (tablet)");
+        } else {
+            Log.d(TAG, "articleEditrequest: in single-pane mode (phone)");
+            //in single-pane mode, start the detail activity for the selected item Id.
+            Intent detailIntent = new Intent(this, AddEditActivity.class);
+            if (article != null) { //edit a article
+                detailIntent.putExtra(Article.class.getSimpleName(), article);
+                startActivity(detailIntent);
+            } else { // add net article
+                startActivity((detailIntent));
+            }
+        }
+    }
+}
+
+
+
+/*
+        code used for initial testing:
+
+        String[] projection = {ArticleContract.Columns._ID,
+                ArticleContract.Columns.ARTICLE_NAME,
+                ArticleContract.Columns.ARTICLE_DESCRIPTION,
+                ArticleContract.Columns.ARTICLE_SORTORDER};
 
         ContentResolver contentResolver = getContentResolver();
 
@@ -61,58 +128,26 @@ public class MainActivity extends AppCompatActivity {
         values.put(ArticleContract.Columns.ARTICLE_SORTORDER, 4);
         int count = contentResolver.update(ArticleContract.buildArticleUri(5), values, null, null);
         Log.d(TAG, "onCreate: " + count + " record(s) updated");
-*/
 
-        Cursor cursor = contentResolver.query(ArticleContract.CONTENT_URI,
-                projection,
-                null,
-                null,
-                ArticleContract.Columns.ARTICLE_NAME);
+/*
+    Cursor cursor = contentResolver.query(ArticleContract.CONTENT_URI,
+            projection,
+            null,
+            null,
+            ArticleContract.Columns.ARTICLE_NAME);
 
-        if(cursor != null){
-            Log.d(TAG, "onCreate: number of rows: " + cursor.getCount());
-            while (cursor.moveToNext()){
-                for(int i=0; i<cursor.getColumnCount(); i++){
-                    Log.d(TAG, "onCreate: " + cursor.getColumnName(i) + ": " + cursor.getString(i));
-                }
-                Log.d(TAG, "onCreate: =.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=");
-            }
-            cursor.close();
+        if (cursor != null) {
+                Log.d(TAG, "onCreate: number of rows: " + cursor.getCount());
+                while (cursor.moveToNext()) {
+                for (int i = 0; i < cursor.getColumnCount(); i++) {
+        Log.d(TAG, "onCreate: " + cursor.getColumnName(i) + ": " + cursor.getString(i));
+        }
+        Log.d(TAG, "onCreate: =.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=");
+        }
+        cursor.close();
         }
 
 //        used for first test
 //        AppDataBase appDataBase = AppDataBase.getInstance(this);
 //        final SQLiteDatabase db = appDataBase.getReadableDatabase();
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.menumain_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-}
+ */
