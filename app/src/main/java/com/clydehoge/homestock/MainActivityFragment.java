@@ -1,13 +1,20 @@
 package com.clydehoge.homestock;
 
-import android.database.sqlite.SQLiteDatabase;
+import android.database.Cursor;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.CursorLoader;
+import androidx.loader.content.Loader;
+
+import java.security.InvalidParameterException;
 
 
 /**
@@ -15,7 +22,11 @@ import android.view.ViewGroup;
  * Use the {@link MainActivityFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MainActivityFragment extends Fragment {
+public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    private static final String TAG = "MainActivityFragment";
+
+    public static final int LOADER_ID = 0;
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -26,10 +37,16 @@ public class MainActivityFragment extends Fragment {
     private String mParam2;
 
     public MainActivityFragment() {
+        Log.d(TAG, "MainActivityFragment: starts");
         // Required empty public constructor
     }
 
-
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onActivityCreated: starts");
+        super.onActivityCreated(savedInstanceState);
+        LoaderManager.getInstance(this).initLoader(LOADER_ID, null, this);
+    }
 
     /**
      * Use this factory method to create a new instance of
@@ -64,5 +81,51 @@ public class MainActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_main, container, false);
+    }
+
+    @NonNull
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
+        Log.d(TAG, "onCreateLoader: starts with id " + id);
+        String[] projection = {ArticleContract.Columns._ID,
+                ArticleContract.Columns.ARTICLE_NAME,
+                ArticleContract.Columns.ARTICLE_DESCRIPTION,
+                ArticleContract.Columns.ARTICLE_SORTORDER};
+        String sortOrder = ArticleContract.Columns.ARTICLE_SORTORDER + "," + ArticleContract.Columns.ARTICLE_NAME;
+
+        switch (id) {
+            case LOADER_ID:
+                return new CursorLoader(getActivity(),
+                        ArticleContract.CONTENT_URI,
+                        projection,
+                        null,
+                        null,
+                        sortOrder);
+            default:
+                throw new InvalidParameterException(TAG + ".onCreateLoader called with invalid loader id " + id);
+        }
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+        Log.d(TAG, "Entering onLoadFinished");
+        int count = -1;
+
+        if (data != null) {
+            while (data.moveToNext()) {
+                for (int i = 0; i < data.getColumnCount(); i++) {
+                    Log.d(TAG, "onLoadFinished: " + data.getColumnName(i) + ": " + data.getString(i));
+                }
+                Log.d(TAG, "onLoadFinished: ==============================");
+            }
+            count = data.getCount();
+        }
+        Log.d(TAG, "onLoadFinished: count is " + count);
+
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+        Log.d(TAG, "onLoaderReset: starts");
     }
 }
