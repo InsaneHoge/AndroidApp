@@ -17,10 +17,11 @@ public class ArticleContract {
     //Article fields
     public static class Columns{
         public static final String _ID = BaseColumns._ID;
-        public static final String ARTICLE_NAME = "Name";
-        public static final String ARTICLE_DESCRIPTION = "Description";
+        public static final String ARTICLE_NAME = "Name";   //TODO change to barcode and coressponding code
+        public static final String ARTICLE_DESCRIPTION = "Description"; //TODO change in db to "not null"
         public static final String ARTICLE_SORTORDER = "SortOrder";
-//        public static final String ARTICLE_CATEGORY = "category";
+        // TODO public static final String ARTICLE_CATEGORY = "category";
+
 
         private Columns(){
             // prevent instantiation

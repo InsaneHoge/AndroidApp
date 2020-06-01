@@ -75,7 +75,7 @@ public class AppProvider extends ContentProvider {
 
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
-        switch(match){
+        switch (match) {
             case ARTICLE:
                 queryBuilder.setTables(ArticleContract.TABLE_NAME);
                 break;
@@ -108,8 +108,12 @@ public class AppProvider extends ContentProvider {
         }
 
         SQLiteDatabase db = mOpenHelper.getReadableDatabase();
-        return queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+//        return queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+        Cursor cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+        Log.d(TAG, "query: rows in returned cursor are " + cursor.getCount());
 
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        return cursor;
     }
 
     @Nullable
@@ -118,7 +122,7 @@ public class AppProvider extends ContentProvider {
 
         final int match = sUriMatcher.match(uri);
 
-        switch(match){
+        switch (match) {
             case ARTICLE:
                 return ArticleContract.CONTENT_TYPE;
             case ARTICLE_ID:
@@ -151,13 +155,13 @@ public class AppProvider extends ContentProvider {
         Uri returnUri;
         long recordId;
 
-        switch(match){
+        switch (match) {
             case ARTICLE:
                 db = mOpenHelper.getWritableDatabase();
                 recordId = db.insert(ArticleContract.TABLE_NAME, null, values);
-                if(recordId >=0){
+                if (recordId >= 0) {
                     returnUri = ArticleContract.buildArticleUri(recordId);
-                } else{
+                } else {
                     throw new android.database.SQLException("Failed to insert into " + uri.toString());
                 }
                 break;
@@ -174,6 +178,15 @@ public class AppProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
+
+        if(recordId >=0){
+            //something was inserted
+            Log.d(TAG, "insert: Setting notifyChanged with " + uri);
+            getContext().getContentResolver().notifyChange(uri, null);
+        }else{
+            Log.d(TAG, "insert: nothing inserted");
+        }
+
         Log.d(TAG, "Exiting insert, returning : " + returnUri);
         return returnUri;
     }
@@ -188,7 +201,7 @@ public class AppProvider extends ContentProvider {
         int count;
         String selectionCriteria;
 
-        switch (match){
+        switch (match) {
             case ARTICLE:
                 db = mOpenHelper.getWritableDatabase();
                 count = db.delete(ArticleContract.TABLE_NAME, selection, selectionArgs);
@@ -199,7 +212,7 @@ public class AppProvider extends ContentProvider {
                 long articleId = ArticleContract.getArticleId(uri);
                 selectionCriteria = ArticleContract.Columns._ID + " = " + articleId;
 
-                if((selection != null) && (selection.length()>0)){
+                if ((selection != null) && (selection.length() > 0)) {
                     selectionCriteria += " AND (" + selection + ")";
                 }
                 count = db.delete(ArticleContract.TABLE_NAME, selectionCriteria, selectionArgs);
@@ -224,6 +237,15 @@ public class AppProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
+
+        if (count >0){
+            //something was changed
+            Log.d(TAG, "delete: Setting notifyChange with " + uri);
+            getContext().getContentResolver().notifyChange(uri, null);
+        } else {
+            Log.d(TAG, "delete: nothing deleted");
+        }
+
         Log.d(TAG, "Exiting update, returning: " + count);
         return count;
     }
@@ -238,7 +260,7 @@ public class AppProvider extends ContentProvider {
         int count;
         String selectionCriteria;
 
-        switch (match){
+        switch (match) {
             case ARTICLE:
                 db = mOpenHelper.getWritableDatabase();
                 count = db.update(ArticleContract.TABLE_NAME, values, selection, selectionArgs);
@@ -249,7 +271,7 @@ public class AppProvider extends ContentProvider {
                 long articleId = ArticleContract.getArticleId(uri);
                 selectionCriteria = ArticleContract.Columns._ID + " = " + articleId;
 
-                if((selection != null) && (selection.length()>0)){
+                if ((selection != null) && (selection.length() > 0)) {
                     selectionCriteria += " AND (" + selection + ")";
                 }
                 count = db.update(ArticleContract.TABLE_NAME, values, selectionCriteria, selectionArgs);
@@ -274,6 +296,15 @@ public class AppProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
+
+        if (count >0){
+            //something was updated
+            Log.d(TAG, "update: Setting notifyChange with " + uri);
+            getContext().getContentResolver().notifyChange(uri, null);
+        } else {
+            Log.d(TAG, "update: nothing updated");
+        }
+
         Log.d(TAG, "Exiting update, returning: " + count);
         return count;
     }
