@@ -1,27 +1,19 @@
 package com.clydehoge.homestock;
 
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-
-import android.util.Log;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 
 /**
  * By Clyde Hogenstijn 20-05-20
  */
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements CursorRecyclerViewAdaptor.OnArticleClickListener {
     private static final String TAG = "MainActivity";
 
     /*
@@ -39,6 +31,11 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        if(findViewById(R.id.articles_details_container) != null ){
+            //The detail container will only be present in the large-screen layouts (res/values-land and res/values-sw600dp).
+            //If this view is present, then the activity should be in two-pane mode.
+            mTwoPane = true;
+        }
 
     }
 
@@ -59,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         switch (id) {
             case R.id.menumain_addArticle:
-                articleEditrequest(null);
+                articleEditRequest(null);
                 break;
             case R.id.menumain_viewArticleStock:
                 break;
@@ -74,12 +71,23 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void articleEditrequest(Article article) {
-        Log.d(TAG, "articleEditrequest: starts");
+    @Override
+    public void onEditClick(Article article) {
+        articleEditRequest(article);
+    }
+
+    @Override
+    public void onDeleteClick(Article article) {
+        getContentResolver().delete(ArticleContract.buildArticleUri(article.getId()), null, null);
+    }
+
+    private void articleEditRequest(Article article) {
+        Log.d(TAG, "articleEditRequest: starts");
         if (mTwoPane) {
-            Log.d(TAG, "articleEditrequest: in two-pane mode (tablet)");
+            Log.d(TAG, "articleEditRequest: in two-pane mode (tablet)");
+
         } else {
-            Log.d(TAG, "articleEditrequest: in single-pane mode (phone)");
+            Log.d(TAG, "articleEditRequest: in single-pane mode (phone)");
             //in single-pane mode, start the detail activity for the selected item Id.
             Intent detailIntent = new Intent(this, AddEditActivity.class);
             if (article != null) { //edit a article

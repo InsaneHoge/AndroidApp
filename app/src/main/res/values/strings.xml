@@ -24,11 +24,11 @@
     <string name="addedit_name">Article name</string>
     <string name="addedit_description">Article description</string>
     <string name="addedit_sortorder">Sort order</string>
-    <string name="addedit_save">Add article</string>
+    <string name="addedit_save">Save article</string>
     <string name="addedit_name_hint">Article name: required</string>
     <string name="addedit_description_hint">Description of article: optional</string>
     <string name="addedit_sortorder_hint">Sort order: sorts low to high</string>
-    <string name="addedit_save_text">Add article</string>
+    <string name="addedit_save_text">Save article</string>
     <string name="title_activity_add_edit">AddEditActivity</string>
     <string name="instructions_header">Instructions</string>
     <string name="instructions">Use the add button (+) in the toolbar above to add new articles\n\nArticles with lower sort order will be placed higher up the list. Articles with the same sort order will be sorted alphabetically\n\nEach article has Edit and Delete buttons if u want to change or remove articles</string>

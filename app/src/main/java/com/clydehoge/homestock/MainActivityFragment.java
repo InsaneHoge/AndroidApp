@@ -88,7 +88,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.article_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        mAdaptor = new CursorRecyclerViewAdaptor(null);
+        mAdaptor = new CursorRecyclerViewAdaptor(null, (CursorRecyclerViewAdaptor.OnArticleClickListener) getActivity());
         recyclerView.setAdapter(mAdaptor);
 
         Log.d(TAG, "onCreateView: returning");
@@ -103,7 +103,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                 ArticleContract.Columns.ARTICLE_NAME,
                 ArticleContract.Columns.ARTICLE_DESCRIPTION,
                 ArticleContract.Columns.ARTICLE_SORTORDER};
-        String sortOrder = ArticleContract.Columns.ARTICLE_SORTORDER + "," + ArticleContract.Columns.ARTICLE_NAME;
+        //SQLite code: <order by> Article.SortORDER, Article.Name COLLATE NOCASE (sort alphabetically ignoring case)
+        String sortOrder = ArticleContract.Columns.ARTICLE_SORTORDER + "," + ArticleContract.Columns.ARTICLE_NAME + " COLLATE NOCASE ASC";
 
         switch (id) {
             case LOADER_ID:

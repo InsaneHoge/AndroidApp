@@ -18,23 +18,31 @@ import androidx.recyclerview.widget.RecyclerView;
 class CursorRecyclerViewAdaptor extends RecyclerView.Adapter<CursorRecyclerViewAdaptor.ArticleViewHolder> {
     private static final String TAG = "CursorRecyclerViewAdapt";
     private Cursor mCursor;
+    private OnArticleClickListener mListener;
 
-    public CursorRecyclerViewAdaptor(Cursor mCursor) {
+    interface OnArticleClickListener {
+        void onEditClick(Article article);
+
+        void onDeleteClick(Article article);
+    }
+
+    public CursorRecyclerViewAdaptor(Cursor mCursor, OnArticleClickListener mlistener) {
         Log.d(TAG, "CursorRecyclerViewAdaptor: Constructor called");
         this.mCursor = mCursor;
+        this.mListener = mlistener;
     }
 
     @NonNull
     @Override
     public ArticleViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Log.d(TAG, "onCreateViewHolder: new view requested");
+//        Log.d(TAG, "onCreateViewHolder: new view requested");
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.article_list_items, parent, false);
         return new ArticleViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ArticleViewHolder holder, int position) {
-        Log.d(TAG, "onBindViewHolder: starts with position " + position);
+//        Log.d(TAG, "onBindViewHolder: starts with position " + position);
 
         if ((mCursor == null) || (mCursor.getCount() == 0)) {
             Log.d(TAG, "onBindViewHolder: providing instructions");
@@ -46,21 +54,54 @@ class CursorRecyclerViewAdaptor extends RecyclerView.Adapter<CursorRecyclerViewA
             if (!mCursor.moveToPosition(position)) {
                 throw new IllegalStateException("Couldn't move cursor to position " + position);
             }
-            holder.name.setText(mCursor.getString(mCursor.getColumnIndex(ArticleContract.Columns.ARTICLE_NAME)));
-            holder.description.setText(mCursor.getString(mCursor.getColumnIndex(ArticleContract.Columns.ARTICLE_DESCRIPTION)));
+
+            final Article article = new Article(mCursor.getLong(mCursor.getColumnIndex(ArticleContract.Columns._ID)),
+                    mCursor.getString(mCursor.getColumnIndex(ArticleContract.Columns.ARTICLE_NAME)),
+                    mCursor.getString(mCursor.getColumnIndex(ArticleContract.Columns.ARTICLE_DESCRIPTION)),
+                    mCursor.getInt(mCursor.getColumnIndex(ArticleContract.Columns.ARTICLE_SORTORDER)));
+
+            holder.name.setText(article.getName());
+            holder.description.setText(article.getDescription());
             holder.editButton.setVisibility(View.VISIBLE); //TODO add onClickListener
             holder.deleteButton.setVisibility(View.VISIBLE); //TODO add onClickListener
+
+            View.OnClickListener buttonListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+//                    Log.d(TAG, "onClick: starts");
+                    switch (v.getId()) {
+                        case R.id.ali_edit:
+                            if (mListener != null) {
+                                mListener.onEditClick(article);
+                            }
+                            break;
+                        case R.id.ali_delete_article:
+                            if (mListener != null) {
+                                mListener.onDeleteClick(article);
+                            }
+                            break;
+                        default:
+                            throw new IllegalArgumentException("onClick found unexpected button with id " + v.getId());
+                    }
+
+//                    Log.d(TAG, "onClick: button with id " + v.getId() + " clicked");
+//                    Log.d(TAG, "onClick: article name is " + article.getName());
+                }
+            };
+
+            holder.editButton.setOnClickListener(buttonListener);
+            holder.deleteButton.setOnClickListener(buttonListener);
         }
 
     }
 
     @Override
     public int getItemCount() {
-        Log.d(TAG, "getItemCount: starts");
+//        Log.d(TAG, "getItemCount: starts");
         if ((mCursor == null) || (mCursor.getCount() == 0)) {
             return 1; // We need to populate a single Viewholder with instructions
         } else {
-            Log.d(TAG, "getItemCount: mCursor count is "+ mCursor.getCount());
+//            Log.d(TAG, "getItemCount: mCursor count is " + mCursor.getCount());
             return mCursor.getCount();
         }
     }
@@ -101,7 +142,7 @@ class CursorRecyclerViewAdaptor extends RecyclerView.Adapter<CursorRecyclerViewA
 
         public ArticleViewHolder(@NonNull View itemView) {
             super(itemView);
-            Log.d(TAG, "ArticleViewHolder: starts");
+//            Log.d(TAG, "ArticleViewHolder: starts");
 
             this.name = (TextView) itemView.findViewById(R.id.atl_name);
             this.description = (TextView) itemView.findViewById(R.id.ali_description);
