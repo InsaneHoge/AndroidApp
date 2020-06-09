@@ -1,7 +1,9 @@
 package com.clydehoge.homestock;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,15 +19,42 @@ public class AddEditActivityFragment extends Fragment {
     private static final String TAG = "AddEditActivityFragment";
 
     public enum FragmentEditMode {EDIT, ADD}
+
     private FragmentEditMode mMode;
 
     private EditText mArticleTextView;
     private EditText mDescriptionTextView;
     private EditText mSortOrderTextView;
     private Button mAddButton;
+    private OnSaveClicked mSaveListener = null;
+
+    interface OnSaveClicked {
+        void onSaveClicked();
+    }
 
     public AddEditActivityFragment() {
         Log.d(TAG, "AddEditActivityFragment: constructor called");
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        Log.d(TAG, "onAttach: starts");
+        super.onAttach(context);
+
+        //Activities containing this fragment must implement it's callbacks
+        Activity activity = getActivity();
+        if (!(activity instanceof OnSaveClicked)) {
+            throw new ClassCastException(activity.getClass().getSimpleName() + " must implement AddEditActivityFragment.OnSaveClicked interface.");
+        }
+
+        mSaveListener = (OnSaveClicked) activity;
+    }
+
+    @Override
+    public void onDetach() {
+        Log.d(TAG, "onDetach: starts");
+        super.onDetach();
+        mSaveListener = null;
     }
 
     @Override
@@ -39,16 +68,16 @@ public class AddEditActivityFragment extends Fragment {
         mArticleTextView = (EditText) view.findViewById(R.id.addedit_name);
         mDescriptionTextView = (EditText) view.findViewById(R.id.addedit_description);
         mSortOrderTextView = (EditText) view.findViewById(R.id.addedit_sortorder);
-        mAddButton = (Button)   view.findViewById(R.id.addedit_save );
+        mAddButton = (Button) view.findViewById(R.id.addedit_save);
 
-        Bundle arguments = getActivity().getIntent().getExtras(); // need to change!!!
+        Bundle arguments = getArguments();
 
         final Article article;
-        if(arguments != null){
+        if (arguments != null) {
             Log.d(TAG, "onCreateView: retrieving article details.");
 
             article = (Article) arguments.getSerializable(Article.class.getSimpleName());
-            if(article != null){
+            if (article != null) {
                 Log.d(TAG, "onCreateView: Article details found, editing...");
                 mArticleTextView.setText(article.getName());
                 mDescriptionTextView.setText(article.getDescription());
@@ -72,7 +101,7 @@ public class AddEditActivityFragment extends Fragment {
                 There is no need to access the database unless this has happened.
                  */
                 int so; //to save repeated conversions to int. * might change this for "barcode"
-                if(mSortOrderTextView.length()>0){
+                if (mSortOrderTextView.length() > 0) {
                     so = Integer.parseInt(mSortOrderTextView.getText().toString());
                 } else {
                     so = 0;
@@ -81,24 +110,24 @@ public class AddEditActivityFragment extends Fragment {
                 ContentResolver contentResolver = getActivity().getContentResolver();
                 ContentValues values = new ContentValues();
 
-                switch (mMode){
+                switch (mMode) {
                     case EDIT:
-                        if(!mArticleTextView.getText().toString().equals(article.getName())){
+                        if (!mArticleTextView.getText().toString().equals(article.getName())) {
                             values.put(ArticleContract.Columns.ARTICLE_NAME, mArticleTextView.getText().toString());
                         }
-                        if(!mDescriptionTextView.getText().toString().equals(article.getDescription())){
+                        if (!mDescriptionTextView.getText().toString().equals(article.getDescription())) {
                             values.put(ArticleContract.Columns.ARTICLE_DESCRIPTION, mDescriptionTextView.getText().toString());
                         }
-                        if(so != 0){
+                        if (so != 0) {
                             values.put(ArticleContract.Columns.ARTICLE_SORTORDER, so);
                         }
-                        if(values.size() !=0){
+                        if (values.size() != 0) {
                             Log.d(TAG, "onClick: updating article");
                             contentResolver.update(ArticleContract.buildArticleUri(article.getId()), values, null, null);
                         }
                         break;
                     case ADD:
-                        if(mArticleTextView.length() >0){
+                        if (mArticleTextView.length() > 0) {
                             Log.d(TAG, "onClick: adding new article");
                             values.put(ArticleContract.Columns.ARTICLE_NAME, mArticleTextView.getText().toString());
                             values.put(ArticleContract.Columns.ARTICLE_DESCRIPTION, mDescriptionTextView.getText().toString());
@@ -108,6 +137,10 @@ public class AddEditActivityFragment extends Fragment {
                         break;
                 }
                 Log.d(TAG, "onClick: Done edeting");
+
+                if (mSaveListener != null) {
+                    mSaveListener.onSaveClicked();
+                }
             }
         });
         Log.d(TAG, "onCreateView: Exiting...");

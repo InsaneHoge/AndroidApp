@@ -8,12 +8,15 @@ import android.view.MenuItem;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 /**
  * By Clyde Hogenstijn 20-05-20
  */
 
-public class MainActivity extends AppCompatActivity implements CursorRecyclerViewAdaptor.OnArticleClickListener {
+public class MainActivity extends AppCompatActivity implements CursorRecyclerViewAdaptor.OnArticleClickListener,
+        AddEditActivityFragment.OnSaveClicked {
     private static final String TAG = "MainActivity";
 
     /*
@@ -31,12 +34,26 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if(findViewById(R.id.articles_details_container) != null ){
+        if (findViewById(R.id.articles_details_container) != null) {
             //The detail container will only be present in the large-screen layouts (res/values-land and res/values-sw600dp).
             //If this view is present, then the activity should be in two-pane mode.
             mTwoPane = true;
         }
+    }
 
+    @Override
+    public void onSaveClicked() {
+        Log.d(TAG, "onSaveClicked: starts");
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment fragment = fragmentManager.findFragmentById(R.id.articles_details_container);
+        if (fragment != null) {
+            fragmentManager.beginTransaction().remove(fragment).commit();
+
+//            does the same as code above:
+//            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+//            fragmentTransaction.remove(fragment);
+//            fragmentTransaction.commit();
+        }
     }
 
     @Override
@@ -85,7 +102,18 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
         Log.d(TAG, "articleEditRequest: starts");
         if (mTwoPane) {
             Log.d(TAG, "articleEditRequest: in two-pane mode (tablet)");
+            AddEditActivityFragment fragment = new AddEditActivityFragment();
 
+            Bundle arguments = new Bundle();
+            arguments.putSerializable(Article.class.getSimpleName(), article);
+            fragment.setArguments(arguments);
+
+            getSupportFragmentManager().beginTransaction().replace(R.id.articles_details_container,fragment).commit();
+
+//            FragmentManager fragmentManager = getSupportFragmentManager();
+//            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+//            fragmentTransaction.replace(R.id.articles_details_container, fragment); // replace calls remove and then add method. will work even if there are no fragments to replace
+//            fragmentTransaction.commit();
         } else {
             Log.d(TAG, "articleEditRequest: in single-pane mode (phone)");
             //in single-pane mode, start the detail activity for the selected item Id.
@@ -93,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
             if (article != null) { //edit a article
                 detailIntent.putExtra(Article.class.getSimpleName(), article);
                 startActivity(detailIntent);
-            } else { // add net article
+            } else { // add new article
                 startActivity((detailIntent));
             }
         }
