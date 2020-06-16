@@ -16,7 +16,7 @@ import androidx.fragment.app.FragmentManager;
  */
 
 public class MainActivity extends AppCompatActivity implements CursorRecyclerViewAdaptor.OnArticleClickListener,
-        AddEditActivityFragment.OnSaveClicked {
+        AddEditActivityFragment.OnSaveClicked, AppDialog.DialogEvents {
     private static final String TAG = "MainActivity";
 
     /*
@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
     private boolean mTwoPane = false;
 
     private static final String ADD_EDIT_FRAGMENT = "AddEditFragment";
+    public static final int DELETE_DIALOG_ID = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +96,20 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
 
     @Override
     public void onDeleteClick(Article article) {
-        getContentResolver().delete(ArticleContract.buildArticleUri(article.getId()), null, null);
+        Log.d(TAG, "onDeleteClick: starts");
+
+        AppDialog dialog = new AppDialog();
+        Bundle args = new Bundle();
+        args.putInt(AppDialog.DIALOG_ID, DELETE_DIALOG_ID);
+        args.putString(AppDialog.DIALOG_MESSAGE, getString(R.string.deldiag_message, article.getId(), article.getName()));
+        args.putInt(AppDialog.DIALOG_POSITIVE_RID, R.string.deldiag_positive_caption);
+
+        args.putLong("ArticleID", article.getId());
+
+        dialog.setArguments(args);
+        dialog.show(getSupportFragmentManager(), null);
+
+//        getContentResolver().delete(ArticleContract.buildArticleUri(article.getId()), null, null);
     }
 
     private void articleEditRequest(Article article) {
@@ -108,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
             arguments.putSerializable(Article.class.getSimpleName(), article);
             fragment.setArguments(arguments);
 
-            getSupportFragmentManager().beginTransaction().replace(R.id.articles_details_container,fragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.articles_details_container, fragment).commit();
 
 //            FragmentManager fragmentManager = getSupportFragmentManager();
 //            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -125,6 +139,24 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
                 startActivity((detailIntent));
             }
         }
+    }
+
+    @Override
+    public void onPositiveDialogResult(int dialogID, Bundle arg) {
+        Log.d(TAG, "onPositiveDialogResult: called");
+        Long articleID = arg.getLong("ArticleID");
+        if(BuildConfig.DEBUG && articleID == 0) throw new AssertionError("Article ID is zero!"); //This code is only used for testing. It will not appear in the final code for the app.
+        getContentResolver().delete(ArticleContract.buildArticleUri(articleID), null, null);
+    }
+
+    @Override
+    public void onNegativeDialogResult(int dialogID, Bundle arg) {
+        Log.d(TAG, "onNegativeDialogResult: called");
+    }
+
+    @Override
+    public void onDialogCancelled(int dialogID) {
+        Log.d(TAG, "onDialogCancelled: called");
     }
 }
 
