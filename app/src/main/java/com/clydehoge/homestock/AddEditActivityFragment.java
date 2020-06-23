@@ -27,6 +27,7 @@ public class AddEditActivityFragment extends Fragment {
     private EditText mSortOrderTextView;
     private Button mAddButton;
     private OnSaveClicked mSaveListener = null;
+    private boolean canClose = true;
 
     interface OnSaveClicked {
         void onSaveClicked();
@@ -34,6 +35,10 @@ public class AddEditActivityFragment extends Fragment {
 
     public AddEditActivityFragment() {
         Log.d(TAG, "AddEditActivityFragment: constructor called");
+    }
+
+    public boolean canClose(){
+        return false;
     }
 
     @Override
@@ -125,6 +130,7 @@ public class AddEditActivityFragment extends Fragment {
                             Log.d(TAG, "onClick: updating article");
                             contentResolver.update(ArticleContract.buildArticleUri(article.getId()), values, null, null);
                         }
+//                        canClose = false;
                         break;
                     case ADD:
                         if (mArticleTextView.length() > 0) {
@@ -134,9 +140,10 @@ public class AddEditActivityFragment extends Fragment {
                             values.put(ArticleContract.Columns.ARTICLE_SORTORDER, so);
                             contentResolver.insert(ArticleContract.CONTENT_URI, values);
                         }
+//                        canClose = false;
                         break;
                 }
-                Log.d(TAG, "onClick: Done edeting");
+                Log.d(TAG, "onClick: Done editing");
 
                 if (mSaveListener != null) {
                     mSaveListener.onSaveClicked();
@@ -150,6 +157,7 @@ public class AddEditActivityFragment extends Fragment {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
     }
+
+
 }

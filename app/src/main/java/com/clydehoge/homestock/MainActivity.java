@@ -5,7 +5,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
@@ -25,9 +28,12 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
      */
     private boolean mTwoPane = false;
 
-    private static final String ADD_EDIT_FRAGMENT = "AddEditFragment";
-    public static final int DELETE_DIALOG_ID = 1;
+    public static final int DIALOG_ID_DELETE = 1;
+    public static final int DIALOG_ID_CANCEL_EDIT = 2;
 
+    private AlertDialog mDialog = null; //module scope because we need to dismiss it in onStop
+
+    //e.g. when orientation changes, to avoid memory leaks
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,12 +87,30 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
             case R.id.menumain_settings:
                 break;
             case R.id.menumain_showAbout:
+                showAboutDialog();
                 break;
             case R.id.menumain_generate:
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void showAboutDialog() {
+        View messageView = getLayoutInflater().inflate(R.layout.about, null, false);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(messageView);
+
+        builder.setTitle(R.string.app_name);
+        builder.setIcon((R.mipmap.ic_launcher));
+
+        mDialog = builder.create();
+        mDialog.setCanceledOnTouchOutside(true);
+
+        TextView tv = (TextView) messageView.findViewById(R.id.about_version);
+        tv.setText("v" + BuildConfig.VERSION_NAME);
+
+        mDialog.show();
     }
 
     @Override
@@ -100,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
 
         AppDialog dialog = new AppDialog();
         Bundle args = new Bundle();
-        args.putInt(AppDialog.DIALOG_ID, DELETE_DIALOG_ID);
+        args.putInt(AppDialog.DIALOG_ID, DIALOG_ID_DELETE);
         args.putString(AppDialog.DIALOG_MESSAGE, getString(R.string.deldiag_message, article.getId(), article.getName()));
         args.putInt(AppDialog.DIALOG_POSITIVE_RID, R.string.deldiag_positive_caption);
 
@@ -108,8 +132,6 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
 
         dialog.setArguments(args);
         dialog.show(getSupportFragmentManager(), null);
-
-//        getContentResolver().delete(ArticleContract.buildArticleUri(article.getId()), null, null);
     }
 
     private void articleEditRequest(Article article) {
@@ -123,11 +145,6 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
             fragment.setArguments(arguments);
 
             getSupportFragmentManager().beginTransaction().replace(R.id.articles_details_container, fragment).commit();
-
-//            FragmentManager fragmentManager = getSupportFragmentManager();
-//            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-//            fragmentTransaction.replace(R.id.articles_details_container, fragment); // replace calls remove and then add method. will work even if there are no fragments to replace
-//            fragmentTransaction.commit();
         } else {
             Log.d(TAG, "articleEditRequest: in single-pane mode (phone)");
             //in single-pane mode, start the detail activity for the selected item Id.
@@ -144,79 +161,59 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
     @Override
     public void onPositiveDialogResult(int dialogID, Bundle arg) {
         Log.d(TAG, "onPositiveDialogResult: called");
-        Long articleID = arg.getLong("ArticleID");
-        if(BuildConfig.DEBUG && articleID == 0) throw new AssertionError("Article ID is zero!"); //This code is only used for testing. It will not appear in the final code for the app.
-        getContentResolver().delete(ArticleContract.buildArticleUri(articleID), null, null);
+        switch (dialogID) {
+            case DIALOG_ID_DELETE:
+                Long articleID = arg.getLong("ArticleID");
+                if (BuildConfig.DEBUG && articleID == 0)
+                    throw new AssertionError("Article ID is zero!"); //This code is only used for testing. It will not appear in the final code for the app.
+                getContentResolver().delete(ArticleContract.buildArticleUri(articleID), null, null);
+            case DIALOG_ID_CANCEL_EDIT:
+                //no action needed
+                break;
+        }
     }
 
     @Override
     public void onNegativeDialogResult(int dialogID, Bundle arg) {
         Log.d(TAG, "onNegativeDialogResult: called");
+        switch (dialogID) {
+            case DIALOG_ID_DELETE:
+                //no action needed
+                break;
+            case DIALOG_ID_CANCEL_EDIT:
+                AddEditActivityFragment fragment;
+                FragmentManager fragmentManager = getSupportFragmentManager();
+
+                fragment = (AddEditActivityFragment) fragmentManager.findFragmentById(R.id.articles_details_container);
+                if (fragment != null) {
+                    getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+                }
+//                finish();
+                break;
+        }
     }
 
     @Override
     public void onDialogCancelled(int dialogID) {
         Log.d(TAG, "onDialogCancelled: called");
     }
+
+    @Override
+    public void onBackPressed() {
+        Log.d(TAG, "onBackPressed: called");
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        AddEditActivityFragment fragment = (AddEditActivityFragment) fragmentManager.findFragmentById(R.id.articles_details_container);
+        if ((fragment == null) || fragment.canClose()) {
+            super.onBackPressed();
+        } else {
+            AppDialog dialog = new AppDialog();
+            Bundle args = new Bundle();
+            args.putInt(AppDialog.DIALOG_ID, DIALOG_ID_CANCEL_EDIT);
+            args.putString(AppDialog.DIALOG_MESSAGE, getString(R.string.cancelEditDiag_message));
+            args.putInt(AppDialog.DIALOG_POSITIVE_RID, R.string.cancelEditDiag_positive_caption);
+            args.putInt(AppDialog.DIALOG_NEGATIVE_RID, R.string.cancelEditDiag_negative_caption);
+            dialog.setArguments(args);
+            dialog.show(getSupportFragmentManager(), null);
+        }
+    }
 }
-
-
-
-/*
-        code used for initial testing:
-
-        String[] projection = {ArticleContract.Columns._ID,
-                ArticleContract.Columns.ARTICLE_NAME,
-                ArticleContract.Columns.ARTICLE_DESCRIPTION,
-                ArticleContract.Columns.ARTICLE_SORTORDER};
-
-        ContentResolver contentResolver = getContentResolver();
-
-
-
-/*
-        ContentValues values = new ContentValues();
-
-        here we are deleting column with id "4":
-        int count = contentResolver.delete(ArticleContract.buildArticleUri(4), null, null);
-
-        Here we are deleting all columns with a description of "Mag weg". This method is used to delete multiple columns and to prevent SQL injection attack:
-        String selection = ArticleContract.Columns.ARTICLE_DESCRIPTION + " =?";
-        String[] args = { "Mag weg" };
-        int count = contentResolver.delete(ArticleContract.CONTENT_URI, selection, args);
-
-        Sample code to test inserting new data into db:
-        values.put(ArticleContract.Columns.ARTICLE_NAME, "New article");
-        values.put(ArticleContract.Columns.ARTICLE_DESCRIPTION, "Beschrijving");
-        values.put(ArticleContract.Columns.ARTICLE_SORTORDER, 2);
-        Uri uri = contentResolver.insert(ArticleContract.CONTENT_URI, values);
-
-        Sample code to test updating a column in the db:
-        values.put(ArticleContract.Columns.ARTICLE_NAME, "Pickwick Thee");
-        values.put(ArticleContract.Columns.ARTICLE_DESCRIPTION, "DUTCH blend");
-        values.put(ArticleContract.Columns.ARTICLE_SORTORDER, 4);
-        int count = contentResolver.update(ArticleContract.buildArticleUri(5), values, null, null);
-        Log.d(TAG, "onCreate: " + count + " record(s) updated");
-
-/*
-    Cursor cursor = contentResolver.query(ArticleContract.CONTENT_URI,
-            projection,
-            null,
-            null,
-            ArticleContract.Columns.ARTICLE_NAME);
-
-        if (cursor != null) {
-                Log.d(TAG, "onCreate: number of rows: " + cursor.getCount());
-                while (cursor.moveToNext()) {
-                for (int i = 0; i < cursor.getColumnCount(); i++) {
-        Log.d(TAG, "onCreate: " + cursor.getColumnName(i) + ": " + cursor.getString(i));
-        }
-        Log.d(TAG, "onCreate: =.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=");
-        }
-        cursor.close();
-        }
-
-//        used for first test
-//        AppDataBase appDataBase = AppDataBase.getInstance(this);
-//        final SQLiteDatabase db = appDataBase.getReadableDatabase();
- */
