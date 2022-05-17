@@ -40,7 +40,9 @@
     <string name="cancelEditDiag_positive_caption">Continue editing</string>
     <string name="cancelEditDiag_negative_caption">Discard changes</string>
     <string name="about_copyright">Copyright © 2020 Clyde Hogenstijn</string>
-    <string name="about_weblink">Developers website www.clyderandomhoge.nl</string>
+    <string name="about_weblink">Developers website </string>
+    <string name="about_url"><u>www.clyderandomhoge.nl</u></string>
+    <string name="about_weblink_21">Developers website www.clyderandomhoge.nl</string>
     <string name="about_email">For support email at clyderandom@email.com</string>
     <string name="about_credits">Icon derived from <b>warehouse- 15</b> at www.openclipart.org by <b>PublicDomainSymbols</b></string>
     <string name="about_code">Code used originally by <b>Tim Buchalka</b>, copyright © 2017 <b>www.LearnProgramming.academy</b></string>

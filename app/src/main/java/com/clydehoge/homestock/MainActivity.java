@@ -1,5 +1,6 @@
 package com.clydehoge.homestock;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -100,6 +101,16 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
         View messageView = getLayoutInflater().inflate(R.layout.about, null, false);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(messageView);
+
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+//                Log.d(TAG, "onClick: Entering messageView.onClick, showing= "+ mDialog.isShowing());
+                if((mDialog != null && mDialog.isShowing())){
+                    mDialog.dismiss();
+                }
+            }
+        });
 
         builder.setTitle(R.string.app_name);
         builder.setIcon((R.mipmap.ic_launcher));
@@ -214,6 +225,14 @@ public class MainActivity extends AppCompatActivity implements CursorRecyclerVie
             args.putInt(AppDialog.DIALOG_NEGATIVE_RID, R.string.cancelEditDiag_negative_caption);
             dialog.setArguments(args);
             dialog.show(getSupportFragmentManager(), null);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mDialog != null && mDialog.isShowing()){
+         mDialog.dismiss();
         }
     }
 }
